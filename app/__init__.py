@@ -1,4 +1,4 @@
-# app/__init__.py
+# app/__init__.py 
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -26,3 +26,4 @@ def create_app():
     app.register_blueprint(chat_bp, url_prefix="/api/chat")
 
     return app
+
