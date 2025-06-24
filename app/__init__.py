@@ -11,7 +11,7 @@ jwt = JWTManager()
 ma = Marshmallow()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="../templates", static_folder="../static")
     app.config.from_object(Config)
 
     db.init_app(app)
@@ -19,8 +19,8 @@ def create_app():
     ma.init_app(app)
 
     # Importar blueprints
-    from .routes.auth import auth_bp
-    from .routes.chat import chat_bp
+    from app.routes.auth import auth_bp
+    from app.routes.chat import chat_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(chat_bp, url_prefix="/api/chat")

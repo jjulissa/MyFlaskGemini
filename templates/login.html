@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Iniciar Sesión</h2>
+        <div class="input-area">
+            <input type="text" id="username" placeholder="Usuario">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="login()">Entrar</button>
+        </div>
+        <div id="login-error" class="msg error" style="display:none;"></div>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorBox = document.getElementById("login-error");
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    errorBox.textContent = errorData.error || "Error desconocido";
+                    errorBox.style.display = "block";
+                    return;
+                }
+
+                const data = await res.json();
+                localStorage.setItem("token", data.access_token);
+                window.location.href = "/";
+            } catch (err) {
+                errorBox.textContent = "Error al conectar con el servidor";
+                errorBox.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

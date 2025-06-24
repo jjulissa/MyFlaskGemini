@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat con Gemini</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-box"></div>
+    <div id="typing-indicator" style="display:none;">Escribiendo...</div>
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+      <button onclick="handleSend()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token'); // JWT obtenido al loguearse 
+    console.log("TOKEN AL ENTRAR:", token); 
+    
+
+    async function sendMessage(msg) { 
+      if (!token) {
+        alert("No estás autenticado. Inicia sesión primero.");
+        return { response: "[Token no encontrado]" };
+      }
+  
+      const res = await fetch("/api/chat/send", { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: msg })
+      });
+  
+      console.log("TOKEN:", token);
+      console.log("Mensaje:", msg); 
+  
+      return await res.json();  
+
+      console.log(token); 
+    }
+  
+    function appendMessage(sender, text) {
+      const chatBox = document.getElementById("chat-box");
+      const message = document.createElement("div");
+      message.className = sender;
+      message.textContent = text;
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  
+    async function handleSend() {
+      const input = document.getElementById("user-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+  
+      appendMessage("user", msg);
+      input.value = "";
+  
+      document.getElementById("typing-indicator").style.display = "block";
+  
+      try {
+        const response = await sendMessage(msg);
+        appendMessage("gemini", response.response || "[Sin respuesta]");
+      } catch (err) {
+        appendMessage("gemini", "[Error al obtener respuesta]");
+      }
+  
+      document.getElementById("typing-indicator").style.display = "none";
+    }
+  </script>
+  
+</body>
+</html>
