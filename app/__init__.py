@@ -4,15 +4,20 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_marshmallow import Marshmallow
+from .config import Config 
+from flask_cors import CORS 
+from dotenv import load_dotenv 
 from .config import Config
+load_dotenv() 
 
 db = SQLAlchemy()
 jwt = JWTManager()
 ma = Marshmallow()
-
+ 
 def create_app():
     app = Flask(__name__, template_folder="../templates", static_folder="../static")
-    app.config.from_object(Config)
+    app.config.from_object(Config) 
+    CORS(app)
 
     db.init_app(app)
     jwt.init_app(app)

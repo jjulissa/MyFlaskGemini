@@ -12,9 +12,11 @@
     <div id="typing-indicator" style="display:none;">Escribiendo...</div>
     <div id="input-area">
       <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
-      <button onclick="handleSend()">Enviar</button>
-    </div>
-  </div>
+      <button  type="button" onclick="handleSend()">Enviar</button>
+    </div> 
+    <h1>@JJulissa</h1>
+  </div> 
+
 
   <script>
     const token = localStorage.getItem('token'); // JWT obtenido al loguearse 
@@ -27,7 +29,7 @@
         return { response: "[Token no encontrado]" };
       }
   
-      const res = await fetch("/api/chat/send", { 
+      const res = await fetch("http://localhost:5000/api/chat/send", { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
