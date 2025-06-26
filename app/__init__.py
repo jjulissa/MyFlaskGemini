@@ -12,8 +12,18 @@ load_dotenv()
 
 db = SQLAlchemy()
 jwt = JWTManager()
-ma = Marshmallow()
- 
+ma = Marshmallow() 
+
+import google.api_core.retry
+retry_policy = google.api_core.retry.Retry(
+    initial=1.0,
+    maximum=10.0,
+    multiplier=2,
+    predicate=google.api_core.retry.if_exception_type(
+        google.api_core.exceptions.ResourceExhausted
+    )
+)
+
 def create_app():
     app = Flask(__name__, template_folder="../templates", static_folder="../static")
     app.config.from_object(Config) 

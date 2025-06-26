@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,8 +41,12 @@
   
       console.log("TOKEN:", token);
       console.log("Mensaje:", msg); 
+
+      const raw = await res.text(); // para ver error completo
+      console.log("Raw response:", raw);
+      return JSON.parse(raw); 
   
-      return await res.json();  
+      // return await res.json();  
 
       console.log(token); 
     }
@@ -66,10 +71,16 @@
       document.getElementById("typing-indicator").style.display = "block";
   
       try {
-        const response = await sendMessage(msg);
+        const response = await sendMessage(msg); 
+        if (response.error) {
+          appendMessage("gemini", `Error: ${response.error}`);
+          return;
+        }
         appendMessage("gemini", response.response || "[Sin respuesta]");
-      } catch (err) {
-        appendMessage("gemini", "[Error al obtener respuesta]");
+      } catch (err) { 
+        appendMessage("gemini", "[Error al obtener respuesta]"); 
+        appendMessage("gemini", "Error: Intenta de nuevo en 30 segundos"); 
+        console.error("Error en handleSend:", error);
       }
   
       document.getElementById("typing-indicator").style.display = "none";

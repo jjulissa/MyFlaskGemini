@@ -1,19 +1,37 @@
 # app/routes/chat.py
 
-import os
+import os 
 import traceback
 import requests  # para capturar excepciones de timeout
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import ChatMessage, db
-import google.generativeai as genai
+import google.generativeai as genai 
+from google.api_core import retry as retries 
+import google.api_core.exceptions
 
 # Configurar API key de Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Crear Blueprint
-chat_bp = Blueprint("chat", __name__)
+chat_bp = Blueprint("chat", __name__) 
+
+# Configurar política de reintentos
+retry_policy = retries.Retry(
+    initial=1.0,
+    maximum=10.0,
+    multiplier=2,
+    predicate=retries.if_exception_type(
+        google.api_core.exceptions.ResourceExhausted
+    )
+)
+
+# Configurar API con política de reintentos
+genai.configure(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 
 # Ruta para enviar mensaje al asistente
 @chat_bp.route('/send', methods=['POST'])
@@ -21,7 +39,7 @@ chat_bp = Blueprint("chat", __name__)
 def send_message():
     try:
         data = request.get_json()
-        content = data.get('content')
+        content = data.get('content') or data.get('message')
 
         if not content:
             return jsonify({"error": "Mensaje vacío"}), 400
@@ -42,11 +60,13 @@ def send_message():
         db.session.commit()
 
         # Obtener respuesta de Gemini
-        model = genai.GenerativeModel("gemini-pro")
+        # model = genai.GenerativeModel("gemini-pro") 
+        model = genai.GenerativeModel("gemini-1.5-flash")
         chat = model.start_chat()
         gemini_response = chat.send_message(content)
         answer = gemini_response.text
 
+        print("Modelos disponibles:", [m.name for m in genai.list_models()])
         # Guardar respuesta del asistente
         assistant_msg = ChatMessage(
             user_id=user_id,
@@ -57,7 +77,7 @@ def send_message():
         db.session.add(assistant_msg)
         db.session.commit()
 
-        return jsonify({"response": answer})
+        return jsonify({"response": answer}) 
 
     except requests.exceptions.Timeout:
         return jsonify({"error": "Tiempo de espera agotado en el servicio de IA"}), 502
